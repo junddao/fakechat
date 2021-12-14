@@ -39,14 +39,4 @@ class AdMobService {
       return 'ca-app-pub-9695790043722201/1433740677';
     }
   }
-
-  // InterstitialAd getNewInterstitial() {
-  //   return InterstitialAd();
-  //   return InterstitialAd(
-  //     adUnitId: getInterstitialAdId(),
-  //     listener: (MobileAdEvent event) {
-  //       print("InterstitialAd event is $event");
-  //     },
-  //   );
-  // }
 }

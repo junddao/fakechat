@@ -1,6 +1,8 @@
+import 'package:fake_chat/generated/locale_keys.g.dart';
 import 'package:fake_chat/view/style/size_config.dart';
 import 'package:fake_chat/view/style/textstyles.dart';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class ManualPage extends StatelessWidget {
   @override
@@ -12,7 +14,8 @@ class ManualPage extends StatelessWidget {
         foregroundColor: Colors.black,
         centerTitle: true,
         elevation: 0,
-        title: Text("사용법", style: MTextStyles.bold18Black),
+        title:
+            Text(LocaleKeys.manual_title.tr(), style: MTextStyles.bold18Black),
       ),
       body: SingleChildScrollView(
         child: Column(
@@ -20,7 +23,7 @@ class ManualPage extends StatelessWidget {
             const SizedBox(
               height: 20,
             ),
-            const Text('1. 아래 그림처럼 채팅방 생성', style: MTextStyles.bold26black),
+            Text(LocaleKeys.manual_1.tr(), style: MTextStyles.bold26black),
             const SizedBox(
               height: 20,
             ),
@@ -40,7 +43,7 @@ class ManualPage extends StatelessWidget {
             const SizedBox(
               height: 20,
             ),
-            const Text('2. 보내기 방법', style: MTextStyles.bold26black),
+            Text(LocaleKeys.manual_2.tr(), style: MTextStyles.bold26black),
             const SizedBox(
               height: 20,
             ),
@@ -60,7 +63,7 @@ class ManualPage extends StatelessWidget {
             const SizedBox(
               height: 20,
             ),
-            const Text('3. 유저 선택', style: MTextStyles.bold26black),
+            Text(LocaleKeys.manual_3.tr(), style: MTextStyles.bold26black),
             const SizedBox(
               height: 20,
             ),
@@ -80,7 +83,7 @@ class ManualPage extends StatelessWidget {
             const SizedBox(
               height: 20,
             ),
-            const Text('4. 결과 확인', style: MTextStyles.bold26black),
+            Text(LocaleKeys.manual_4.tr(), style: MTextStyles.bold26black),
             const SizedBox(
               height: 20,
             ),

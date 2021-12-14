@@ -1,0 +1,19 @@
+{
+  "splash_title": "fake Chat",
+  "group_chat": "Group Chatting",
+  "user_list": "user list",
+  "select_user_for_send_message": "please select user for send message.",
+  "send_my_message": "send my message",
+  "afternoon": "PM",
+  "morning": "AM",
+  "manual_title": "manual",
+  "manual_1": "1. make chat room link under picture",
+  "manual_2": "2. send method",
+  "manual_3": "3. select user",
+  "manual_4": "4. complete",
+  "chat_start_time": "chat start time",
+  "open_chat_room": "Open chat room",
+  "select_page": "select Page",
+  "add_user": "add user",
+  "remove_user": "remove user"
+}

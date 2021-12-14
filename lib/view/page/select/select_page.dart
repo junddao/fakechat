@@ -1,14 +1,19 @@
 import 'dart:io';
 
+import 'package:devicelocale/devicelocale.dart';
 import 'package:fake_chat/data/selected_data.dart';
+import 'package:fake_chat/generated/locale_keys.g.dart';
+import 'package:fake_chat/util/admob_service.dart';
 import 'package:fake_chat/view/style/colors.dart';
 import 'package:fake_chat/view/style/size_config.dart';
 import 'package:fake_chat/view/style/textstyles.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class SelectPage extends StatefulWidget {
   @override
@@ -21,7 +26,13 @@ class _SelectPageState extends State<SelectPage> {
 
   File? _myImage;
 
+  InterstitialAd? _interstitialAd;
+  int _numInterstitialLoadAttempts = 0;
+
+  int maxFailedLoadAttempts = 3;
+
   List<String>? _imagePaths = List.generate(5, (index) => '');
+  String? _backgroundImagePath;
   final picker = ImagePicker();
 
   // final TextEditingController myIdController = new TextEditingController();
@@ -32,11 +43,74 @@ class _SelectPageState extends State<SelectPage> {
 
   int otherUserCnt = 0;
 
+  List<String> months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ];
   @override
   void initState() {
     super.initState();
+
     pickedDate = DateTime.now();
     time = TimeOfDay.now();
+
+    _createInterstitialAd();
+  }
+
+  @override
+  void dispose() {
+    _interstitialAd?.dispose();
+    super.dispose();
+  }
+
+  void _createInterstitialAd() {
+    String adId = AdMobService().getInterstitialAdId()!;
+    // String adId = 'ca-app-pub-3940256099942544/1033173712';
+    InterstitialAd.load(
+        adUnitId: adId,
+        request: AdRequest(),
+        adLoadCallback: InterstitialAdLoadCallback(
+          onAdLoaded: (InterstitialAd ad) {
+            _interstitialAd = ad;
+            _numInterstitialLoadAttempts = 0;
+          },
+          onAdFailedToLoad: (LoadAdError error) {
+            _numInterstitialLoadAttempts += 1;
+            _interstitialAd = null;
+            if (_numInterstitialLoadAttempts <= maxFailedLoadAttempts) {
+              _createInterstitialAd();
+            }
+          },
+        ));
+  }
+
+  void _showInterstitialAd() {
+    if (_interstitialAd == null) {
+      print('Warning: attempt to show interstitial before loaded.');
+      return;
+    }
+    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
+      onAdDismissedFullScreenContent: (InterstitialAd ad) {
+        ad.dispose();
+        _createInterstitialAd();
+      },
+      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
+        ad.dispose();
+        _createInterstitialAd();
+      },
+    );
+    _interstitialAd!.show();
+    _interstitialAd = null;
   }
 
   Future getYourImage(int index) async {
@@ -60,7 +134,7 @@ class _SelectPageState extends State<SelectPage> {
       floatingActionButton: FloatingActionButton(
         backgroundColor: Colors.yellow,
         child: Text(
-          "사용법",
+          LocaleKeys.manual_title.tr(),
           style: MTextStyles.bold12Black,
         ),
         onPressed: () {
@@ -73,7 +147,8 @@ class _SelectPageState extends State<SelectPage> {
   _appBar() {
     return AppBar(
         automaticallyImplyLeading: false,
-        title: Text("선택창", style: MTextStyles.bold18Black),
+        title:
+            Text(LocaleKeys.select_page.tr(), style: MTextStyles.bold18Black),
         centerTitle: true,
         elevation: 0.0,
         backgroundColor: Colors.transparent);
@@ -94,8 +169,9 @@ class _SelectPageState extends State<SelectPage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text("채팅 시작 시간", style: MTextStyles.bold16Black),
-                      SizedBox(
+                      Text(LocaleKeys.chat_start_time.tr(),
+                          style: MTextStyles.bold16Black),
+                      const SizedBox(
                         height: 8,
                       ),
                       InkWell(
@@ -107,63 +183,74 @@ class _SelectPageState extends State<SelectPage> {
                         child: Row(
                           children: [
                             SvgPicture.asset('assets/icons/calendar.svg'),
-                            SizedBox(
+                            const SizedBox(
                               width: 8,
                             ),
-                            Text(
-                              "${pickedDate!.year}년 ${pickedDate!.month}월 ${pickedDate!.day}일  " +
-                                  "${time!.hour}시 ${time!.minute}분",
-                              style: MTextStyles.regular16Pinkish_grey,
-                            ),
+                            context.locale.languageCode == "ko"
+                                ? Text(
+                                    "${pickedDate!.year}년 ${pickedDate!.month}월 ${pickedDate!.day}일,  ${time!.hour}시 ${time!.minute}분",
+                                    style: MTextStyles.regular14BlackColor,
+                                  )
+                                : Text(
+                                    " ${months[pickedDate!.month - 1]} ${pickedDate!.day}, ${pickedDate!.year}, ${time!.hour}:${time!.minute}",
+                                    style: MTextStyles.regular14BlackColor,
+                                  ),
                           ],
                         ),
                       ),
-                      SizedBox(height: 16),
+                      const SizedBox(height: 16),
                       // 구분줄
-                      Container(
-                        height: 1,
-                        width: SizeConfig.screenWidth! - 40,
-                        decoration: BoxDecoration(
-                            border: Border.all(
-                          color: MColors.white_three,
-                        )),
-                      ),
-                      SizedBox(height: 16),
-
-                      // Text("내 대화명", style: MTextStyles.bold16Black),
-                      // SizedBox(height: 16),
+                      const Divider(),
                       // Container(
-                      //   height: 54,
-                      //   // width: SizeConfig.screenWidth - 200,
-                      //   padding:
-                      //       EdgeInsets.only(left: 16, right: 16, bottom: 4),
+                      //   height: 1,
+                      //   width: SizeConfig.screenWidth! - 40,
                       //   decoration: BoxDecoration(
-                      //       borderRadius: BorderRadius.all(Radius.circular(8)),
                       //       border: Border.all(
-                      //           color: MColors.pinkish_grey, width: 1)),
-                      //   child: TextFormField(
-                      //     controller: myIdController,
-                      //     // onChanged: (value){
-                      //     //   if(value.length >15)
-                      //     //     _meetingNameController.text = value.substring(0,value.length);
-                      //     // },
-                      //     inputFormatters: [
-                      //       LengthLimitingTextInputFormatter(15),
-                      //     ],
-                      //     decoration: InputDecoration(
-                      //       hintText: "자신의 대화명을 입력해주세요..",
-                      //       hintStyle: MTextStyles.medium16WhiteThree,
-                      //       labelStyle: TextStyle(color: Colors.transparent),
-                      //       counterText: '',
-                      //       border: UnderlineInputBorder(
-                      //         borderSide: BorderSide.none,
+                      //     color: MColors.white_three,
+                      //   )),
+                      // ),
+                      // const SizedBox(height: 16),
+                      // Text("채팅방 배경 사진 선택", style: MTextStyles.bold16Black),
+                      // SizedBox(height: 16),
+                      // Row(children: [
+                      //   SizedBox(width: 16),
+                      //   InkWell(
+                      //     onTap: () {
+                      //       getBackgroundImage();
+                      //     },
+                      //     child: Container(
+                      //       height: 44,
+                      //       width: 120,
+                      //       decoration: BoxDecoration(
+                      //           borderRadius:
+                      //               BorderRadius.all(Radius.circular(24)),
+                      //           border: Border.all(
+                      //               color: MColors.white_three, width: 1),
+                      //           color: MColors.white),
+                      //       child: Padding(
+                      //         padding:
+                      //             const EdgeInsets.only(left: 10, right: 10),
+                      //         child: Center(
+                      //           child: Row(
+                      //             mainAxisAlignment: MainAxisAlignment.center,
+                      //             children: [
+                      //               SvgPicture.asset(
+                      //                   'assets/icons/camera_g.svg'),
+                      //               const SizedBox(
+                      //                 width: 6,
+                      //               ),
+                      //               const Text('사진 선택',
+                      //                   style:
+                      //                       MTextStyles.medium12BrownishGrey),
+                      //             ],
+                      //           ),
+                      //         ),
                       //       ),
                       //     ),
                       //   ),
-                      // ),
-                      // SizedBox(height: 16),
-
-                      // divideLine(),
+                      // ]),
+                      // SizedBox(height: 10),
+                      // Divider(),
                       SizedBox(height: 10),
                       addUser(),
                       SizedBox(height: 10),
@@ -174,7 +261,7 @@ class _SelectPageState extends State<SelectPage> {
                       otherUserCnt > 2 ? otherUserWidget(2) : SizedBox.shrink(),
                       otherUserCnt > 3 ? otherUserWidget(3) : SizedBox.shrink(),
                       otherUserCnt > 4 ? otherUserWidget(4) : SizedBox.shrink(),
-                      divideLine(),
+                      // divideLine(),
 
                       SizedBox(height: 30),
                     ],
@@ -220,6 +307,8 @@ class _SelectPageState extends State<SelectPage> {
                         yourImage: _yourImages,
                       );
 
+                      _showInterstitialAd();
+
                       Navigator.of(context)
                           .pushNamed("ChatPage", arguments: selectedData);
                     }
@@ -227,9 +316,9 @@ class _SelectPageState extends State<SelectPage> {
                   child: Container(
                     padding: EdgeInsets.symmetric(horizontal: 0, vertical: 12),
                     width: SizeConfig.screenWidth! - 48,
-                    child: const Center(
+                    child: Center(
                       child: Text(
-                        "채팅방 열기",
+                        LocaleKeys.open_chat_room.tr(),
                         style: MTextStyles.bold12White,
                       ),
                     ),
@@ -253,8 +342,6 @@ class _SelectPageState extends State<SelectPage> {
       )),
     );
   }
-
-  loadImage() {}
 
   Future<void> _pickDate() async {
     DateTime? date = await showDatePicker(
@@ -300,89 +387,102 @@ class _SelectPageState extends State<SelectPage> {
   }
 
   Widget otherUserWidget(index) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SizedBox(height: 16),
-        Text("상대방 아이디 ${index + 1}", style: MTextStyles.bold16Black),
-
-        SizedBox(height: 16),
-        Container(
-          height: 54,
-          // width: SizeConfig.screenWidth - 200,
-          padding: EdgeInsets.only(left: 16, right: 16, bottom: 4),
-          decoration: BoxDecoration(
-              borderRadius: BorderRadius.all(Radius.circular(8)),
-              border: Border.all(color: MColors.pinkish_grey, width: 1)),
-          child: TextFormField(
-            controller: yourIdControllers[index],
-            inputFormatters: [
-              LengthLimitingTextInputFormatter(15),
-            ],
-            decoration: InputDecoration(
-              hintText: "상대방 대화명을 입력해주세요..",
-              hintStyle: MTextStyles.medium16WhiteThree,
-              labelStyle: TextStyle(color: Colors.transparent),
-              counterText: '',
-              border: UnderlineInputBorder(
-                borderSide: BorderSide.none,
-              ),
-            ),
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 10),
+      child: Container(
+        decoration: BoxDecoration(
+          // color: MColors.white_three08,
+          border: Border.all(color: Colors.black, width: 3.0),
+          borderRadius: BorderRadius.all(
+            Radius.circular(12),
           ),
         ),
-        SizedBox(height: 16),
-        // 구분줄
-        Text("상대방 사진", style: MTextStyles.bold16Black),
-        SizedBox(height: 16),
-        Row(
+        padding: EdgeInsets.all(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            SizedBox(width: 16),
-            InkWell(
-              onTap: () {
-                getYourImage(index);
-              },
-              child: Container(
-                height: 44,
-                width: 120,
-                decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(24)),
-                    border: Border.all(color: MColors.white_three, width: 1),
-                    color: MColors.white),
-                child: Padding(
-                  padding: const EdgeInsets.only(left: 10, right: 10),
-                  child: Center(
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        SvgPicture.asset('assets/icons/camera_g.svg'),
-                        SizedBox(
-                          width: 6,
-                        ),
-                        Text('사진 선택', style: MTextStyles.medium12BrownishGrey),
-                      ],
-                    ),
+            SizedBox(height: 16),
+            Text("상대방 아이디 ${index + 1}", style: MTextStyles.bold16Black),
+
+            SizedBox(height: 16),
+            Container(
+              height: 54,
+              // width: SizeConfig.screenWidth - 200,
+              padding: EdgeInsets.only(left: 16, right: 16, bottom: 4),
+              decoration: BoxDecoration(
+                  borderRadius: BorderRadius.all(Radius.circular(8)),
+                  border: Border.all(color: MColors.pinkish_grey, width: 1)),
+              child: TextFormField(
+                controller: yourIdControllers[index],
+                inputFormatters: [
+                  LengthLimitingTextInputFormatter(15),
+                ],
+                decoration: InputDecoration(
+                  hintText: "상대방 대화명을 입력해주세요..",
+                  hintStyle: MTextStyles.medium16WhiteThree,
+                  labelStyle: TextStyle(color: Colors.transparent),
+                  counterText: '',
+                  border: UnderlineInputBorder(
+                    borderSide: BorderSide.none,
                   ),
                 ),
               ),
             ),
-            SizedBox(width: 20),
-            //사진 추가 listview
-
-            Container(
-              height: 70,
-              width: 70,
-              child: _imagePaths!.length <= index + 1
-                  ? SizedBox.shrink()
-                  : CircleAvatar(
-                      backgroundImage: FileImage(File(_imagePaths![index])),
-                      radius: 20,
+            SizedBox(height: 16),
+            // 구분줄
+            Text("상대방 사진", style: MTextStyles.bold16Black),
+            SizedBox(height: 16),
+            Row(
+              children: [
+                SizedBox(width: 16),
+                InkWell(
+                  onTap: () {
+                    getYourImage(index);
+                  },
+                  child: Container(
+                    height: 44,
+                    width: 120,
+                    decoration: BoxDecoration(
+                        borderRadius: BorderRadius.all(Radius.circular(24)),
+                        border:
+                            Border.all(color: MColors.white_three, width: 1),
+                        color: MColors.white),
+                    child: Padding(
+                      padding: const EdgeInsets.only(left: 10, right: 10),
+                      child: Center(
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SvgPicture.asset('assets/icons/camera_g.svg'),
+                            SizedBox(
+                              width: 6,
+                            ),
+                            Text('사진 선택',
+                                style: MTextStyles.medium12BrownishGrey),
+                          ],
+                        ),
+                      ),
                     ),
+                  ),
+                ),
+                SizedBox(width: 20),
+                //사진 추가 listview
+
+                Container(
+                  height: 70,
+                  width: 70,
+                  child: _imagePaths!.length <= index + 1
+                      ? SizedBox.shrink()
+                      : CircleAvatar(
+                          backgroundImage: FileImage(File(_imagePaths![index])),
+                          radius: 20,
+                        ),
+                ),
+              ],
             ),
           ],
         ),
-        SizedBox(height: 10),
-        Divider(),
-      ],
+      ),
     );
   }
 
@@ -390,9 +490,9 @@ class _SelectPageState extends State<SelectPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        SizedBox(height: 16),
-        Text("상대방 추가 / 삭제 (최대 5명)", style: MTextStyles.bold16Black),
-        SizedBox(height: 16),
+        const SizedBox(height: 16),
+        const Text("상대방 추가 / 삭제 (최대 5명)", style: MTextStyles.bold16Black),
+        const SizedBox(height: 16),
         Row(
           children: [
             InkWell(
@@ -414,18 +514,19 @@ class _SelectPageState extends State<SelectPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.plus_one),
-                        SizedBox(
+                        const Icon(Icons.plus_one),
+                        const SizedBox(
                           width: 6,
                         ),
-                        Text('유저 추가', style: MTextStyles.medium12BrownishGrey),
+                        Text(LocaleKeys.add_user.tr(),
+                            style: MTextStyles.medium12BrownishGrey),
                       ],
                     ),
                   ),
                 ),
               ),
             ),
-            SizedBox(width: 20),
+            const SizedBox(width: 20),
             InkWell(
               onTap: () {
                 setState(() {
@@ -436,7 +537,7 @@ class _SelectPageState extends State<SelectPage> {
                 height: 44,
                 width: 120,
                 decoration: BoxDecoration(
-                    borderRadius: BorderRadius.all(Radius.circular(24)),
+                    borderRadius: const BorderRadius.all(Radius.circular(24)),
                     border: Border.all(color: MColors.white_three, width: 1),
                     color: MColors.white),
                 child: Padding(
@@ -445,11 +546,13 @@ class _SelectPageState extends State<SelectPage> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(Icons.exposure_minus_1, color: MColors.tomato),
-                        SizedBox(
+                        const Icon(Icons.exposure_minus_1,
+                            color: MColors.tomato),
+                        const SizedBox(
                           width: 6,
                         ),
-                        Text('유저 삭제', style: MTextStyles.medium12tomato),
+                        Text(LocaleKeys.remove_user.tr(),
+                            style: MTextStyles.medium12tomato),
                       ],
                     ),
                   ),
@@ -460,5 +563,17 @@ class _SelectPageState extends State<SelectPage> {
         ),
       ],
     );
+  }
+
+  void getBackgroundImage() async {
+    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
+
+    setState(() {
+      if (pickedFile != null) {
+        _backgroundImagePath = pickedFile.path;
+      } else {
+        print('No image selected.');
+      }
+    });
   }
 }

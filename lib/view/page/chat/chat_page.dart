@@ -4,6 +4,7 @@ import 'package:adaptive_dialog/adaptive_dialog.dart';
 import 'package:bubble/bubble.dart';
 import 'package:fake_chat/data/message_data.dart';
 import 'package:fake_chat/data/selected_data.dart';
+import 'package:fake_chat/generated/locale_keys.g.dart';
 import 'package:fake_chat/util/admob_service.dart';
 import 'package:fake_chat/view/style/colors.dart';
 import 'package:fake_chat/view/style/size_config.dart';
@@ -12,6 +13,8 @@ import 'package:fake_chat/view/style/textstyles.dart';
 import 'package:flutter/material.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
+import 'package:easy_localization/easy_localization.dart';
+import 'package:devicelocale/devicelocale.dart';
 
 class ChatPage extends StatefulWidget {
   ChatPage({Key? key, SelectedData? selectedDate})
@@ -29,10 +32,22 @@ class _ChatPageState extends State<ChatPage> {
   DateTime? pDateTime;
   ScrollController? _scrollController;
 
-  InterstitialAd? _interstitialAd;
-  int _numInterstitialLoadAttempts = 0;
+  String? locale;
 
-  int maxFailedLoadAttempts = 3;
+  List<String> months = [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December'
+  ];
 
   @override
   void initState() {
@@ -42,65 +57,11 @@ class _ChatPageState extends State<ChatPage> {
     pDateTime = DateTime.now();
 
     // 초기에 광고 하나 보여주자
-    _createInterstitialAd();
-    _showInterstitialAd();
-    // AdMobService ams = AdMobService();
-    // InterstitialAd newAd = ams.getNewInterstitial();
-    // newAd.load();
-    // newAd.show(
-    //   anchorType: AnchorType.bottom,
-    //   anchorOffset: 0.0,
-    //   horizontalCenterOffset: 0.0,
-    // );
-  }
-
-  void _createInterstitialAd() {
-    InterstitialAd.load(
-        adUnitId: AdMobService().getInterstitialAdId()!,
-        request: const AdRequest(),
-        adLoadCallback: InterstitialAdLoadCallback(
-          onAdLoaded: (InterstitialAd ad) {
-            _interstitialAd = ad;
-            _numInterstitialLoadAttempts = 0;
-            _interstitialAd!.setImmersiveMode(true);
-          },
-          onAdFailedToLoad: (LoadAdError error) {
-            _numInterstitialLoadAttempts += 1;
-            _interstitialAd = null;
-            if (_numInterstitialLoadAttempts <= maxFailedLoadAttempts) {
-              _createInterstitialAd();
-            }
-          },
-        ));
-  }
-
-  void _showInterstitialAd() {
-    if (_interstitialAd == null) {
-      print('Warning: attempt to show interstitial before loaded.');
-      return;
-    }
-    _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-      onAdShowedFullScreenContent: (InterstitialAd ad) =>
-          print('ad onAdShowedFullScreenContent.'),
-      onAdDismissedFullScreenContent: (InterstitialAd ad) {
-        print('$ad onAdDismissedFullScreenContent.');
-        ad.dispose();
-        _createInterstitialAd();
-      },
-      onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
-        print('$ad onAdFailedToShowFullScreenContent: $error');
-        ad.dispose();
-        _createInterstitialAd();
-      },
-    );
-    _interstitialAd!.show();
-    _interstitialAd = null;
   }
 
   @override
   void dispose() {
     _textController!.dispose();
-    _interstitialAd?.dispose();
 
     super.dispose();
   }
@@ -124,8 +85,8 @@ class _ChatPageState extends State<ChatPage> {
       title: widget._selectedData.yourId!.length > 1
           ? RichText(
               text: TextSpan(children: [
-              const TextSpan(
-                text: '그룹채팅 ',
+              TextSpan(
+                text: LocaleKeys.group_chat.tr(),
                 style: MTextStyles.bold18Black,
               ),
               TextSpan(
@@ -169,7 +130,9 @@ class _ChatPageState extends State<ChatPage> {
                 padding:
                     const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
                 child: Text(
-                  getFakeDate(),
+                  context.locale.languageCode == "ko"
+                      ? getFakeDate()
+                      : getFakeDateForEn(),
                   style: MTextStyles.regular12White,
                 ),
               ),
@@ -266,8 +229,9 @@ class _ChatPageState extends State<ChatPage> {
                             onPressed: () async {
                               final result = await showConfirmationDialog<int>(
                                 context: context,
-                                title: '유저 목록',
-                                message: '메세지를 보낼 유저를 선택하세요.',
+                                title: LocaleKeys.user_list.tr(),
+                                message: LocaleKeys.select_user_for_send_message
+                                    .tr(),
                                 actions: [
                                   ...List.generate(
                                     widget._selectedData.yourId!.length,
@@ -278,7 +242,7 @@ class _ChatPageState extends State<ChatPage> {
                                     ),
                                   ),
                                   AlertDialogAction(
-                                    label: '내 메세지 보내기',
+                                    label: LocaleKeys.send_my_message.tr(),
                                     key: widget._selectedData.yourId!.length,
                                   ),
                                 ],
@@ -318,7 +282,7 @@ class _ChatPageState extends State<ChatPage> {
                               _textController!.clear();
                               setState(() {});
                             },
-                            child: Text('#',
+                            child: const Text('#',
                                 style: TextStyle(
                                     fontSize: 24, color: MColors.greyish)))
                       ],
@@ -610,7 +574,7 @@ class _ChatPageState extends State<ChatPage> {
         tempSMinutes = "0" + tempMinutes.toString();
       } else
         tempSMinutes = tempMinutes.toString();
-      return Text("오후 ${tempHour}:" + tempSMinutes,
+      return Text("${LocaleKeys.afternoon.tr()} ${tempHour}:" + tempSMinutes,
           style: MTextStyles.regular10Grey06);
     } else {
       int tempHour = _messageDatas[index].t!.hour;
@@ -621,7 +585,7 @@ class _ChatPageState extends State<ChatPage> {
       } else
         tempSMinutes = tempMinutes.toString();
       return Text(
-        "오전 ${tempHour}:" + tempSMinutes,
+        "${LocaleKeys.morning.tr()} ${tempHour}:" + tempSMinutes,
         style: MTextStyles.regular10Grey06,
       );
     }
@@ -669,6 +633,41 @@ class _ChatPageState extends State<ChatPage> {
     }
 
     String fakeDate = year + month + day + dayOfTheWeek!;
+
+    return fakeDate;
+  }
+
+  String getFakeDateForEn() {
+    String year = widget._selectedData.pickedDate!.year.toString();
+    String month = months[widget._selectedData.pickedDate!.month];
+    String day = widget._selectedData.pickedDate!.day.toString();
+    String? dayOfTheWeek;
+    switch (widget._selectedData.pickedDate!.weekday) {
+      case 1:
+        dayOfTheWeek = "Moday";
+        break;
+      case 2:
+        dayOfTheWeek = "Tuesday";
+        break;
+      case 3:
+        dayOfTheWeek = "Wednesday";
+        break;
+      case 4:
+        dayOfTheWeek = "Thursday";
+        break;
+      case 5:
+        dayOfTheWeek = "Friday";
+        break;
+      case 6:
+        dayOfTheWeek = "Saterday";
+        break;
+      case 7:
+        dayOfTheWeek = "Sunday";
+        break;
+      default:
+    }
+
+    String fakeDate = '$dayOfTheWeek, $month $day, $year';
 
     return fakeDate;
   }

@@ -28,6 +28,11 @@
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
 	<string>Main</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>ko</string>
+		<string>en</string>
+	</array>
 	<key>NSCameraUsageDescription</key>
 	<string>프로필 및 디자인 사진 게시를 위해 사용합니다.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>

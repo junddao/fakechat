@@ -1,0 +1,19 @@
+{
+  "splash_title": "가짜채팅",
+  "group_chat": "그룹채팅",
+  "user_list": "유저목록",
+  "select_user_for_send_message": "메세지를 보낼 유저를 선택하세요.",
+  "send_my_message": "내 메세지 보내기",
+  "afternoon": "오후",
+  "morning": "오전",
+  "manual_title": "사용법",
+  "manual_1": "1. 아래 그림처럼 채팅방 생성",
+  "manual_2": "2. 보내기 방법",
+  "manual_3": "3. 유저 선택",
+  "manual_4": "4. 결과 확인",
+  "chat_start_time": "채팅 시작 시간",
+  "open_chat_room": "채팅방 열기",
+  "select_page": "선택창",
+  "add_user": "유저 추가",
+  "remove_user": "유저 삭제"
+}

@@ -1,5 +1,7 @@
+import 'package:fake_chat/generated/locale_keys.g.dart';
 import 'package:fake_chat/view/style/textstyles.dart';
 import 'package:flutter/material.dart';
+import 'package:easy_localization/easy_localization.dart';
 
 class SplashScreen extends StatefulWidget {
   @override
@@ -29,14 +31,14 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   Widget build(BuildContext context) {
     return Container(
-      decoration: BoxDecoration(
+      decoration: const BoxDecoration(
         color: Colors.white,
       ),
       child: Stack(
         alignment: Alignment.center,
         children: [
           Text(
-            'Fake Chat',
+            LocaleKeys.splash_title.tr(),
             style: MTextStyles.bold26black,
           ),
         ],
