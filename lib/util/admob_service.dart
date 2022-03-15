@@ -3,23 +3,6 @@ import 'dart:io';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class AdMobService {
-  String? getAdMobID() {
-    if (Platform.isIOS) {
-      return 'ca-app-pub-9695790043722201~3375902957';
-    } else if (Platform.isAndroid) {
-      return "ca-app-pub-9695790043722201~2171273127";
-    }
-    return null;
-  }
-
-  String? getBannerAdID() {
-    if (Platform.isIOS) {
-    } else if (Platform.isAndroid) {
-      // return "ca-app-pub-9695790043722201/8889394257";
-    }
-    return null;
-  }
-
   String? getInterstitialAdId() {
     if (Platform.isIOS) {
       return 'ca-app-pub-9695790043722201~3359475487'; // 내꺼

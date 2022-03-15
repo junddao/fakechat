@@ -102,11 +102,9 @@ class _SelectPageState extends State<SelectPage> {
     _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
       onAdDismissedFullScreenContent: (InterstitialAd ad) {
         ad.dispose();
-        _createInterstitialAd();
       },
       onAdFailedToShowFullScreenContent: (InterstitialAd ad, AdError error) {
         ad.dispose();
-        _createInterstitialAd();
       },
     );
     _interstitialAd!.show();
@@ -276,6 +274,11 @@ class _SelectPageState extends State<SelectPage> {
               child: Center(
                 child: InkWell(
                   onTap: () {
+                    if (otherUserCnt == 0) {
+                      ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                          content: Text(LocaleKeys.warning_message1.tr())));
+                      return;
+                    }
                     String myId = 'rkWkcoxld!!';
                     List<String> ids =
                         List.generate(otherUserCnt, (index) => '');
@@ -371,8 +374,8 @@ class _SelectPageState extends State<SelectPage> {
       barrierDismissible: false, // user must tap button!
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('에러.'),
-          content: Text("누락된 항목이 있습니다."),
+          title: Text(LocaleKeys.error_title.tr()),
+          content: Text(LocaleKeys.error_contents.tr()),
           actions: <Widget>[
             TextButton(
               child: Text('OK'),
@@ -402,7 +405,8 @@ class _SelectPageState extends State<SelectPage> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             SizedBox(height: 16),
-            Text("상대방 아이디 ${index + 1}", style: MTextStyles.bold16Black),
+            Text("${LocaleKeys.otherId.tr()} ${index + 1}",
+                style: MTextStyles.bold16Black),
 
             SizedBox(height: 16),
             Container(
@@ -418,7 +422,7 @@ class _SelectPageState extends State<SelectPage> {
                   LengthLimitingTextInputFormatter(15),
                 ],
                 decoration: InputDecoration(
-                  hintText: "상대방 대화명을 입력해주세요..",
+                  hintText: LocaleKeys.otherName.tr(),
                   hintStyle: MTextStyles.medium16WhiteThree,
                   labelStyle: TextStyle(color: Colors.transparent),
                   counterText: '',
@@ -430,7 +434,8 @@ class _SelectPageState extends State<SelectPage> {
             ),
             SizedBox(height: 16),
             // 구분줄
-            Text("상대방 사진", style: MTextStyles.bold16Black),
+            Text(LocaleKeys.otherPersonImage.tr(),
+                style: MTextStyles.bold16Black),
             SizedBox(height: 16),
             Row(
               children: [
@@ -441,7 +446,7 @@ class _SelectPageState extends State<SelectPage> {
                   },
                   child: Container(
                     height: 44,
-                    width: 120,
+                    // width: 120,
                     decoration: BoxDecoration(
                         borderRadius: BorderRadius.all(Radius.circular(24)),
                         border:
@@ -457,7 +462,7 @@ class _SelectPageState extends State<SelectPage> {
                             SizedBox(
                               width: 6,
                             ),
-                            Text('사진 선택',
+                            Text(LocaleKeys.selectImage.tr(),
                                 style: MTextStyles.medium12BrownishGrey),
                           ],
                         ),
@@ -471,7 +476,7 @@ class _SelectPageState extends State<SelectPage> {
                 Container(
                   height: 70,
                   width: 70,
-                  child: _imagePaths!.length <= index + 1
+                  child: _imagePaths!.length <= index
                       ? SizedBox.shrink()
                       : CircleAvatar(
                           backgroundImage: FileImage(File(_imagePaths![index])),
@@ -491,7 +496,7 @@ class _SelectPageState extends State<SelectPage> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         const SizedBox(height: 16),
-        const Text("상대방 추가 / 삭제 (최대 5명)", style: MTextStyles.bold16Black),
+        Text(LocaleKeys.notice.tr(), style: MTextStyles.bold16Black),
         const SizedBox(height: 16),
         Row(
           children: [
@@ -503,7 +508,7 @@ class _SelectPageState extends State<SelectPage> {
               },
               child: Container(
                 height: 44,
-                width: 120,
+                // width: 120,
                 decoration: BoxDecoration(
                     borderRadius: BorderRadius.all(Radius.circular(24)),
                     border: Border.all(color: MColors.white_three, width: 1),
@@ -535,7 +540,7 @@ class _SelectPageState extends State<SelectPage> {
               },
               child: Container(
                 height: 44,
-                width: 120,
+                // width: 120,
                 decoration: BoxDecoration(
                     borderRadius: const BorderRadius.all(Radius.circular(24)),
                     border: Border.all(color: MColors.white_three, width: 1),

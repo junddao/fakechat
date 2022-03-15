@@ -15,5 +15,13 @@
   "open_chat_room": "Open chat room",
   "select_page": "select Page",
   "add_user": "add user",
-  "remove_user": "remove user"
+  "remove_user": "remove user",
+  "warning_message1": "Please select at least one person.",
+  "otherId": "other person Name",
+  "otherName": "Please input name..",
+  "otherPersonImage": "other person Image",
+  "selectImage": "select Image",
+  "notice": "add / remove (Up to 5 people)",
+  "error_title": "error",
+  "error_contents": "Please fill in all contents."
 }

@@ -15,5 +15,13 @@
   "open_chat_room": "채팅방 열기",
   "select_page": "선택창",
   "add_user": "유저 추가",
-  "remove_user": "유저 삭제"
+  "remove_user": "유저 삭제",
+  "warning_message1": "최소 1명의 유저는 선택해주세요.",
+  "otherId": "상대방 아이디",
+  "otherName": "상대방 대화명을 입력해주세요..",
+  "otherPersonImage": "상대방 사진",
+  "selectImage": "사진 선택",
+  "notice": "상대방 추가 / 삭제 (최대 5명)",
+  "error_title": "에러",
+  "error_contents": "누락된 항목이 있습니다."
 }

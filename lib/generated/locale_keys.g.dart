@@ -18,5 +18,13 @@ abstract class  LocaleKeys {
   static const select_page = 'select_page';
   static const add_user = 'add_user';
   static const remove_user = 'remove_user';
+  static const warning_message1 = 'warning_message1';
+  static const otherId = 'otherId';
+  static const otherName = 'otherName';
+  static const otherPersonImage = 'otherPersonImage';
+  static const selectImage = 'selectImage';
+  static const notice = 'notice';
+  static const error_title = 'error_title';
+  static const error_contents = 'error_contents';
 
 }
