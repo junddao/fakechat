@@ -24,7 +24,7 @@ class _SplashScreenState extends State<SplashScreen> {
   }
 
   void _navigatorToHome() {
-    Navigator.of(context).pushNamed('SelectPage');
+    Navigator.of(context).pushNamedAndRemoveUntil('SelectPage', (route) => false);
     // Navigator.of(context).pushNamed('OnBoardingScreenPage');
   }
 

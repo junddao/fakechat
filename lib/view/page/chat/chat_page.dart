@@ -5,6 +5,10 @@ import 'package:bubble/bubble.dart';
 import 'package:fake_chat/data/message_data.dart';
 import 'package:fake_chat/data/selected_data.dart';
 import 'package:fake_chat/generated/locale_keys.g.dart';
+import 'package:fake_chat/models/chat_time.dart';
+import 'package:fake_chat/models/user.dart';
+import 'package:fake_chat/provider/chat_time_provider.dart';
+import 'package:fake_chat/provider/user_provider.dart';
 import 'package:fake_chat/util/admob_service.dart';
 import 'package:fake_chat/view/style/colors.dart';
 import 'package:fake_chat/view/style/size_config.dart';
@@ -15,15 +19,12 @@ import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 import 'package:easy_localization/easy_localization.dart';
 import 'package:devicelocale/devicelocale.dart';
+import 'package:provider/src/provider.dart';
 
 class ChatPage extends StatefulWidget {
-  ChatPage({Key? key, SelectedData? selectedDate})
-      : _selectedData = selectedDate!,
-        super(key: key);
+  ChatPage({Key? key}) : super(key: key);
   @override
   _ChatPageState createState() => _ChatPageState();
-
-  final SelectedData _selectedData;
 }
 
 class _ChatPageState extends State<ChatPage> {
@@ -33,6 +34,8 @@ class _ChatPageState extends State<ChatPage> {
   ScrollController? _scrollController;
 
   String? locale;
+  List<User> users = [];
+  late ChatTime chatTime;
 
   List<String> months = [
     'January',
@@ -68,6 +71,8 @@ class _ChatPageState extends State<ChatPage> {
 
   @override
   Widget build(BuildContext context) {
+    chatTime = context.watch<ChatTimeProvider>().chatTime;
+    users = context.watch<UserProvider>().users;
     return Scaffold(
       // resizeToAvoidBottomInset: false,
       backgroundColor: const Color(0xffb2c7da),
@@ -82,7 +87,7 @@ class _ChatPageState extends State<ChatPage> {
       foregroundColor: Colors.black,
       // centerTitle: true,
       elevation: 0,
-      title: widget._selectedData.yourId!.length > 1
+      title: users.length > 1
           ? RichText(
               text: TextSpan(children: [
               TextSpan(
@@ -90,11 +95,11 @@ class _ChatPageState extends State<ChatPage> {
                 style: MTextStyles.bold18Black,
               ),
               TextSpan(
-                text: '${widget._selectedData.yourId!.length + 1}',
+                text: '${users.length + 1}',
                 style: MTextStyles.bold18WarmGrey,
               )
             ]))
-          : Text(widget._selectedData.yourId![0]),
+          : Text(users[0].name),
       actions: const [
         Icon(Icons.search),
         SizedBox(
@@ -127,12 +132,9 @@ class _ChatPageState extends State<ChatPage> {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: Padding(
-                padding:
-                    const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
+                padding: const EdgeInsets.only(left: 8, right: 8, top: 4, bottom: 4),
                 child: Text(
-                  context.locale.languageCode == "ko"
-                      ? getFakeDate()
-                      : getFakeDateForEn(),
+                  context.locale.languageCode == "ko" ? getFakeDate() : getFakeDateForEn(),
                   style: MTextStyles.regular12White,
                 ),
               ),
@@ -172,19 +174,7 @@ class _ChatPageState extends State<ChatPage> {
                       Icons.add_box_outlined,
                       color: MColors.greyish,
                     ),
-                    onTap: () {
-                      // setState(() {
-                      //   _messageDatas.add(
-                      //     MessageData(
-                      //       isMine: false,
-                      //       message: _textController!.text,
-                      //       t: getFakeTime(),
-                      //     ),
-                      //   );
-                      //   scrollToBottom();
-                      //   _textController!.clear();
-                      // });
-                    },
+                    onTap: () {},
                   ),
                   const SizedBox(
                     width: 8,
@@ -201,18 +191,6 @@ class _ChatPageState extends State<ChatPage> {
                     child: Row(
                       children: [
                         const InkWell(
-                          // onTap: () {
-                          //   setState(() {
-                          //     _messageDatas.add(
-                          //       MessageData(
-                          //         isMine: true,
-                          //         deviderDate: true,
-                          //         message: getFakeDate(),
-                          //         t: getFakeTime(),
-                          //       ),
-                          //     );
-                          //   });
-                          // },
                           child: Icon(
                             Icons.sentiment_satisfied_sharp,
                             color: MColors.greyish,
@@ -230,42 +208,40 @@ class _ChatPageState extends State<ChatPage> {
                               final result = await showConfirmationDialog<int>(
                                 context: context,
                                 title: LocaleKeys.user_list.tr(),
-                                message: LocaleKeys.select_user_for_send_message
-                                    .tr(),
+                                message: LocaleKeys.select_user_for_send_message.tr(),
                                 actions: [
                                   ...List.generate(
-                                    widget._selectedData.yourId!.length,
+                                    users.length,
                                     (index) => AlertDialogAction(
-                                      label:
-                                          '${widget._selectedData.yourId![index]}',
+                                      label: '${users[index].name}',
                                       key: index,
                                     ),
                                   ),
                                   AlertDialogAction(
                                     label: LocaleKeys.send_my_message.tr(),
-                                    key: widget._selectedData.yourId!.length,
+                                    key: users.length,
                                   ),
                                 ],
                                 shrinkWrap: false,
                               );
                               print('aaa $result');
                               if (result != null) {
-                                if (result ==
-                                    widget._selectedData.yourId!.length) {
+                                if (result == users.length) {
                                   _messageDatas.add(
                                     MessageData(
-                                      ids: widget._selectedData.myId,
+                                      ids: '',
                                       isMine: true,
                                       message: _textController!.text,
                                       t: getFakeTime(),
                                     ),
                                   );
                                 } else {
+                                  var file = File(users[result].imagePath);
+
                                   _messageDatas.add(
                                     MessageData(
-                                      ids: widget._selectedData.yourId![result],
-                                      image: widget
-                                          ._selectedData.yourImage![result],
+                                      ids: users[result].name,
+                                      image: file,
                                       isMine: false,
                                       message: _textController!.text,
                                       t: getFakeTime(),
@@ -277,14 +253,11 @@ class _ChatPageState extends State<ChatPage> {
 
                               }
                               FocusScope.of(context).unfocus();
-                              WidgetsBinding.instance!
-                                  .addPostFrameCallback((_) => _scrollToEnd());
+                              WidgetsBinding.instance!.addPostFrameCallback((_) => _scrollToEnd());
                               _textController!.clear();
                               setState(() {});
                             },
-                            child: const Text('#',
-                                style: TextStyle(
-                                    fontSize: 24, color: MColors.greyish)))
+                            child: const Text('#', style: TextStyle(fontSize: 24, color: MColors.greyish)))
                       ],
                     ),
                   )
@@ -292,9 +265,7 @@ class _ChatPageState extends State<ChatPage> {
               ),
             ),
           ),
-          Platform.isIOS
-              ? Container(color: Colors.white, height: 30)
-              : SizedBox.shrink(),
+          Platform.isIOS ? Container(color: Colors.white, height: 30) : SizedBox.shrink(),
         ],
       ),
     );
@@ -317,14 +288,11 @@ class _ChatPageState extends State<ChatPage> {
   Widget returnMyMessage(int index) {
     if (index == 0 && _messageDatas[index].isMine == true) {
       return returnMyFirstMessage(index);
-    } else if (index > 0 &&
-        _messageDatas[index].isMine == true &&
-        _messageDatas[index - 1].isMine == false) {
+    } else if (index > 0 && _messageDatas[index].isMine == true && _messageDatas[index - 1].isMine == false) {
       {
         return returnMyFirstMessage(index);
       }
-    } else if (index > 0 &&
-        _messageDatas[index].t!.minute != _messageDatas[index - 1].t!.minute) {
+    } else if (index > 0 && _messageDatas[index].t!.minute != _messageDatas[index - 1].t!.minute) {
       return returnMyFirstMessage(index);
     } else {
       return returnMyNormalMessage(index);
@@ -392,8 +360,7 @@ class _ChatPageState extends State<ChatPage> {
       {
         return returnYourFirstMessage(index);
       }
-    } else if (index > 0 &&
-        _messageDatas[index].t!.minute != _messageDatas[index - 1].t!.minute) {
+    } else if (index > 0 && _messageDatas[index].t!.minute != _messageDatas[index - 1].t!.minute) {
       return returnYourFirstMessage(index);
     } else {
       return returnYourNormalMessage(index);
@@ -559,8 +526,7 @@ class _ChatPageState extends State<ChatPage> {
   Widget getTime(int index) {
     if (_messageDatas.length > index + 1) {
       if (_messageDatas[index].isMine == _messageDatas[index + 1].isMine) {
-        if (_messageDatas[index].t!.minute ==
-            _messageDatas[index + 1].t!.minute) {
+        if (_messageDatas[index].t!.minute == _messageDatas[index + 1].t!.minute) {
           return SizedBox.shrink();
         }
       }
@@ -574,8 +540,7 @@ class _ChatPageState extends State<ChatPage> {
         tempSMinutes = "0" + tempMinutes.toString();
       } else
         tempSMinutes = tempMinutes.toString();
-      return Text("${LocaleKeys.afternoon.tr()} ${tempHour}:" + tempSMinutes,
-          style: MTextStyles.regular10Grey06);
+      return Text("${LocaleKeys.afternoon.tr()} ${tempHour}:" + tempSMinutes, style: MTextStyles.regular10Grey06);
     } else {
       int tempHour = _messageDatas[index].t!.hour;
       int tempMinutes = _messageDatas[index].t!.minute;
@@ -594,8 +559,8 @@ class _ChatPageState extends State<ChatPage> {
   TimeOfDay getFakeTime() {
     Duration d = DateTime.now().difference(pDateTime!);
 
-    int fakeMinute = (widget._selectedData.time!.minute + d.inMinutes) % 60;
-    int fakeHour = (widget._selectedData.time!.hour + d.inHours) % 24;
+    int fakeMinute = (chatTime.time!.minute + d.inMinutes) % 60;
+    int fakeHour = (chatTime.time!.hour + d.inHours) % 24;
 
     TimeOfDay fakeTime = new TimeOfDay(hour: fakeHour, minute: fakeMinute);
 
@@ -603,11 +568,11 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   String getFakeDate() {
-    String year = widget._selectedData.pickedDate!.year.toString() + "년 ";
-    String month = widget._selectedData.pickedDate!.month.toString() + "월 ";
-    String day = widget._selectedData.pickedDate!.day.toString() + "일 ";
+    String year = chatTime.pickedDate!.year.toString() + "년 ";
+    String month = chatTime.pickedDate!.month.toString() + "월 ";
+    String day = chatTime.pickedDate!.day.toString() + "일 ";
     String? dayOfTheWeek;
-    switch (widget._selectedData.pickedDate!.weekday) {
+    switch (chatTime.pickedDate!.weekday) {
       case 1:
         dayOfTheWeek = "월요일";
         break;
@@ -638,11 +603,11 @@ class _ChatPageState extends State<ChatPage> {
   }
 
   String getFakeDateForEn() {
-    String year = widget._selectedData.pickedDate!.year.toString();
-    String month = months[widget._selectedData.pickedDate!.month];
-    String day = widget._selectedData.pickedDate!.day.toString();
+    String year = chatTime.pickedDate!.year.toString();
+    String month = months[chatTime.pickedDate!.month];
+    String day = chatTime.pickedDate!.day.toString();
     String? dayOfTheWeek;
-    switch (widget._selectedData.pickedDate!.weekday) {
+    switch (chatTime.pickedDate!.weekday) {
       case 1:
         dayOfTheWeek = "Moday";
         break;

@@ -14,8 +14,7 @@ class ManualPage extends StatelessWidget {
         foregroundColor: Colors.black,
         centerTitle: true,
         elevation: 0,
-        title:
-            Text(LocaleKeys.manual_title.tr(), style: MTextStyles.bold18Black),
+        title: Text(LocaleKeys.manual_title.tr(), style: MTextStyles.bold18Black),
       ),
       body: SingleChildScrollView(
         child: Column(
