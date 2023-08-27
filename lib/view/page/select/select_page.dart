@@ -247,7 +247,7 @@ class _SelectPageState extends State<SelectPage> {
                     ChatTime chatTime = ChatTime(pickedDate: pickedDate, time: time);
                     context.read<ChatTimeProvider>().setTime(chatTime);
 
-                    // _showInterstitialAd();
+                    _showInterstitialAd();
 
                     Navigator.of(context).pushNamed("ChatPage");
                   },

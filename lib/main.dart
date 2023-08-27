@@ -42,7 +42,7 @@ class MyApp extends StatelessWidget {
         title: LocaleKeys.splash_title.tr(),
         theme: ThemeData(
           primaryColor: Colors.white,
-          accentColor: MColors.naver_green,
+          hintColor: MColors.naver_green,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
         onGenerateRoute: Routers.generateRoute,
