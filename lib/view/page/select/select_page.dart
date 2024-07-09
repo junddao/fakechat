@@ -1,25 +1,19 @@
 import 'dart:io';
 
-import 'package:devicelocale/devicelocale.dart';
-import 'package:fake_chat/data/selected_data.dart';
+import 'package:easy_localization/easy_localization.dart';
 import 'package:fake_chat/generated/locale_keys.g.dart';
 import 'package:fake_chat/models/chat_time.dart';
-import 'package:fake_chat/models/user.dart';
 import 'package:fake_chat/provider/chat_time_provider.dart';
 import 'package:fake_chat/provider/user_provider.dart';
 import 'package:fake_chat/util/admob_service.dart';
+import 'package:fake_chat/util/utility.dart';
 import 'package:fake_chat/view/style/colors.dart';
 import 'package:fake_chat/view/style/size_config.dart';
 import 'package:fake_chat/view/style/textstyles.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
-import 'package:image_picker/image_picker.dart';
-import 'package:intl/intl.dart';
-import 'package:easy_localization/easy_localization.dart';
 import 'package:provider/provider.dart';
-import 'package:provider/src/provider.dart';
 
 class SelectPage extends StatefulWidget {
   @override
@@ -144,128 +138,156 @@ class _SelectPageState extends State<SelectPage> {
 
   Widget _body() {
     // final usersProvider = context.watch<UserProvider>();
-    return WillPopScope(
-      onWillPop: () async => false,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Expanded(
-              child: SingleChildScrollView(
-                child: Container(
-                  padding: EdgeInsets.only(left: 10, right: 10),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(LocaleKeys.chat_start_time.tr(), style: MTextStyles.bold16Black),
-                      const SizedBox(
-                        height: 8,
-                      ),
-                      InkWell(
-                        onTap: () async {
-                          _pickDate().then((value) {
-                            _pickTime();
-                          });
-                        },
-                        child: Row(
+    return PopScope(
+      canPop: false,
+      child: Column(
+        children: [
+          InkWell(
+            onTap: () async {
+              if (Platform.isAndroid) {
+                await Utility().launcherURl('https://play.google.com/store/apps/details?id=com.jj.dongnesosik');
+              } else {
+                await Utility()
+                    .launcherURl('https://apps.apple.com/kr/app/%EB%8F%99%EB%84%A4%EC%86%8C%EC%8B%9D/id1597758008');
+              }
+            },
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.asset(
+                  'assets/images/ad.png',
+                  // fit: BoxFit.fitWidth,
+                  // height: 200,
+                  width: double.infinity,
+                ),
+              ),
+            ),
+          ),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Container(
+                        padding: EdgeInsets.only(left: 10, right: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            SvgPicture.asset('assets/icons/calendar.svg'),
+                            Text(LocaleKeys.chat_start_time.tr(), style: MTextStyles.bold16Black),
                             const SizedBox(
-                              width: 8,
+                              height: 8,
                             ),
-                            context.locale.languageCode == "ko"
-                                ? Text(
-                                    "${pickedDate!.year}년 ${pickedDate!.month}월 ${pickedDate!.day}일,  ${time!.hour}시 ${time!.minute}분",
-                                    style: MTextStyles.regular14BlackColor,
-                                  )
-                                : Text(
-                                    " ${months[pickedDate!.month - 1]} ${pickedDate!.day}, ${pickedDate!.year}, ${time!.hour}:${time!.minute}",
-                                    style: MTextStyles.regular14BlackColor,
+                            InkWell(
+                              onTap: () async {
+                                _pickDate().then((value) {
+                                  _pickTime();
+                                });
+                              },
+                              child: Row(
+                                children: [
+                                  SvgPicture.asset('assets/icons/calendar.svg'),
+                                  const SizedBox(
+                                    width: 8,
                                   ),
+                                  context.locale.languageCode == "ko"
+                                      ? Text(
+                                          "${pickedDate!.year}년 ${pickedDate!.month}월 ${pickedDate!.day}일,  ${time!.hour}시 ${time!.minute}분",
+                                          style: MTextStyles.regular14BlackColor,
+                                        )
+                                      : Text(
+                                          " ${months[pickedDate!.month - 1]} ${pickedDate!.day}, ${pickedDate!.year}, ${time!.hour}:${time!.minute}",
+                                          style: MTextStyles.regular14BlackColor,
+                                        ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 16),
+                            // 구분줄
+                            const Divider(),
+
+                            SizedBox(height: 18),
+
+                            Consumer(builder: (ctx, UserProvider watch, child) {
+                              final users = watch.users;
+                              print(users.length);
+                              return ListView.builder(
+                                shrinkWrap: true,
+                                itemBuilder: (__, index) {
+                                  var imagePath = users[index].imagePath;
+                                  return ListTile(
+                                    leading: Container(
+                                      height: 70,
+                                      width: 70,
+                                      child: CircleAvatar(
+                                        backgroundImage: FileImage(File(imagePath)),
+                                        radius: 20,
+                                      ),
+                                    ),
+                                    title: Text(users[index].name, style: MTextStyles.regular14BlackColor),
+                                    trailing: InkWell(
+                                        onTap: () {
+                                          context.read<UserProvider>().removeUser(users[index]);
+                                          // setState(() {});
+                                        },
+                                        child: Icon(Icons.remove_circle, color: MColors.tomato)),
+                                  );
+                                },
+                                itemCount: users.length,
+                              );
+                            }),
+
+                            // divideLine(),
+
+                            SizedBox(height: 30),
                           ],
                         ),
                       ),
-                      const SizedBox(height: 16),
-                      // 구분줄
-                      const Divider(),
-
-                      SizedBox(height: 18),
-
-                      Consumer(builder: (ctx, UserProvider watch, child) {
-                        final users = watch.users;
-                        print(users.length);
-                        return ListView.builder(
-                          shrinkWrap: true,
-                          itemBuilder: (__, index) {
-                            var imagePath = users[index].imagePath;
-                            return ListTile(
-                              leading: Container(
-                                height: 70,
-                                width: 70,
-                                child: CircleAvatar(
-                                  backgroundImage: FileImage(File(imagePath)),
-                                  radius: 20,
-                                ),
-                              ),
-                              title: Text(users[index].name, style: MTextStyles.regular14BlackColor),
-                              trailing: InkWell(
-                                  onTap: () {
-                                    context.read<UserProvider>().removeUser(users[index]);
-                                    // setState(() {});
-                                  },
-                                  child: Icon(Icons.remove_circle, color: MColors.tomato)),
-                            );
-                          },
-                          itemCount: users.length,
-                        );
-                      }),
-
-                      // divideLine(),
-
-                      SizedBox(height: 30),
-                    ],
+                    ),
                   ),
-                ),
-              ),
-            ),
-            Container(
-              decoration: BoxDecoration(
-                color: MColors.tomato,
-              ),
-              child: Center(
-                child: InkWell(
-                  onTap: () {
-                    if (context.read<UserProvider>().users.isEmpty) {
-                      ScaffoldMessenger.of(context)
-                          .showSnackBar(SnackBar(content: Text(LocaleKeys.warning_message1.tr())));
-                      return;
-                    }
-
-                    // context.read<UserProvider>().setMy();
-
-                    ChatTime chatTime = ChatTime(pickedDate: pickedDate, time: time);
-                    context.read<ChatTimeProvider>().setTime(chatTime);
-
-                    _showInterstitialAd();
-
-                    Navigator.of(context).pushNamed("ChatPage");
-                  },
-                  child: Container(
-                    padding: EdgeInsets.symmetric(horizontal: 0, vertical: 12),
-                    width: SizeConfig.screenWidth! - 48,
+                  Container(
+                    decoration: BoxDecoration(
+                      color: MColors.tomato,
+                    ),
                     child: Center(
-                      child: Text(
-                        LocaleKeys.open_chat_room.tr(),
-                        style: MTextStyles.bold12White,
+                      child: InkWell(
+                        onTap: () {
+                          if (context.read<UserProvider>().users.isEmpty) {
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(SnackBar(content: Text(LocaleKeys.warning_message1.tr())));
+                            return;
+                          }
+
+                          // context.read<UserProvider>().setMy();
+
+                          ChatTime chatTime = ChatTime(pickedDate: pickedDate, time: time);
+                          context.read<ChatTimeProvider>().setTime(chatTime);
+
+                          _showInterstitialAd();
+
+                          Navigator.of(context).pushNamed("ChatPage");
+                        },
+                        child: Container(
+                          padding: EdgeInsets.symmetric(horizontal: 0, vertical: 12),
+                          width: SizeConfig.screenWidth! - 48,
+                          child: Center(
+                            child: Text(
+                              LocaleKeys.open_chat_room.tr(),
+                              style: MTextStyles.bold12White,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
-                ),
+                ],
               ),
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
