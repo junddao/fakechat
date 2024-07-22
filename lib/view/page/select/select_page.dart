@@ -6,7 +6,6 @@ import 'package:fake_chat/models/chat_time.dart';
 import 'package:fake_chat/provider/chat_time_provider.dart';
 import 'package:fake_chat/provider/user_provider.dart';
 import 'package:fake_chat/util/admob_service.dart';
-import 'package:fake_chat/util/utility.dart';
 import 'package:fake_chat/view/style/colors.dart';
 import 'package:fake_chat/view/style/size_config.dart';
 import 'package:fake_chat/view/style/textstyles.dart';
@@ -142,28 +141,28 @@ class _SelectPageState extends State<SelectPage> {
       canPop: false,
       child: Column(
         children: [
-          InkWell(
-            onTap: () async {
-              if (Platform.isAndroid) {
-                await Utility().launcherURl('https://play.google.com/store/apps/details?id=com.jj.dongnesosik');
-              } else {
-                await Utility()
-                    .launcherURl('https://apps.apple.com/kr/app/%EB%8F%99%EB%84%A4%EC%86%8C%EC%8B%9D/id1597758008');
-              }
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(12),
-                child: Image.asset(
-                  'assets/images/ad.png',
-                  // fit: BoxFit.fitWidth,
-                  // height: 200,
-                  width: double.infinity,
-                ),
-              ),
-            ),
-          ),
+          // InkWell(
+          //   onTap: () async {
+          //     if (Platform.isAndroid) {
+          //       await Utility().launcherURl('https://play.google.com/store/apps/details?id=com.jj.dongnesosik');
+          //     } else {
+          //       await Utility()
+          //           .launcherURl('https://apps.apple.com/kr/app/%EB%8F%99%EB%84%A4%EC%86%8C%EC%8B%9D/id1597758008');
+          //     }
+          //   },
+          //   child: Padding(
+          //     padding: const EdgeInsets.all(8.0),
+          //     child: ClipRRect(
+          //       borderRadius: BorderRadius.circular(12),
+          //       child: Image.asset(
+          //         'assets/images/ad.png',
+          //         // fit: BoxFit.fitWidth,
+          //         // height: 200,
+          //         width: double.infinity,
+          //       ),
+          //     ),
+          //   ),
+          // ),
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 24),
